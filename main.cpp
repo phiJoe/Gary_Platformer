@@ -56,34 +56,42 @@ int main() {
     // ---------------------------------------- Set callbacks for input ----------------
     glfwSetFramebufferSizeCallback(window, frame_buffer_callback);
 
-    // Character Quad
-    Quad character_quad;
+    // ---------------------------------------------------------------------------------
+
+    // Character and Background
+    Quad base_quad;
 
     // 3D Model
     std::string model_path = "example_mesh/viking_model.obj";
     Model viking_room(model_path);
 
+    // -----------------------------------------------------------------------------------
     // Shader creations
     Shader quad_shader("_vertex.vs", "_fragment.fs");
+    Shader background_shader("_vertex_background.vs", "_fragment_background.fs");
     Shader model_shader("_vertex_model.vs", "_fragment_model.fs");
 
+    // -----------------------------------------------------------------------------------
     // Textures
     Texture2D quad_texture("textures/gary.png");
+    Texture2D background("textures/background/grass_landscape.png");
+    Texture2D stone_tiles("textures/background/rock_tiles.png");
     Texture2D model_texture("textures/viking_room.png");
 
     // ------------------------------ Walk Animation -------------------------------------
-    double walk_interval_slow = 0.2;
+    double walk_interval_slow = 0.1;
     double walk_timer = 0.0;
     int walk_counter = 0;
     bool invert = false;
-
+    
     Texture2D idle_sprite("walk_cycle/idle.png");
     Texture2D l1_sprite("walk_cycle/left1_.png");
     Texture2D l2_sprite("walk_cycle/left2_.png");
     Texture2D r1_sprite("walk_cycle/right1_.png");
     Texture2D r2_sprite("walk_cycle/right2_.png");
 
-    WALK_PHASE walk_sequence[] = {idle, left1, left2, left1, idle, right1, right2, right1};
+    WALK_PHASE walk_sequence[2][8] = {{idle, left1, left2, left1, idle, right1, right2, right1},
+                                      {idle, right1, right2, right1, idle, left1, left2, left1}};
 
     // ------------------------------------------------------------------------------------
     
@@ -113,7 +121,7 @@ int main() {
     double t2;
     double dt;
 
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
 
     // ---------------------------- Render/Game Loop -------------------------------------
     while (!glfwWindowShouldClose(window)) {
@@ -128,57 +136,36 @@ int main() {
         poll_buttons(window);
 
         /* ===  Clear screen === */
-
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        /* === Quad === */
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
+        /* === Background === */
+        background_shader.activate();
+        background_shader.setMatrix("model", glm::value_ptr(base));
+
+        // Set sampler unit
+        background_shader.setInt("tex", 0);
+
+        // Texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, background.getTextureID());
+
+        // Draw
+        base_quad.draw();
+        
+        /* === Character === */
         quad_shader.activate();
         quad_shader.setMatrix("model", glm::value_ptr(scale));
+        quad_shader.setBool("invert", invert);
 
         // Set sampler unit
         quad_shader.setInt("tex", 0);
 
-        // Associate texture unit
-        // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, quad_texture.getTextureID());
-
-        // Walk
+        // Walk state
         if(walk_timer > walk_interval_slow)
         {   
-            //printf("Step\n");
             walk_timer = 0.0;
-            quad_shader.setBool("invert", invert);
-            switch(walk_sequence[walk_counter])
-            {   
-                case idle:
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, idle_sprite.getTextureID());
-                    printf("Idle\n");
-                    break;
-                case left1:
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, l1_sprite.getTextureID());
-                    printf("L1\n");
-                    break;
-                case left2:
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, l2_sprite.getTextureID());
-                    printf("L2\n");
-                    break;
-                case right1:
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, r1_sprite.getTextureID());
-                    printf("R1\n");
-                    break;
-                case right2:
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, r2_sprite.getTextureID());
-                    printf("R2\n");
-                    break;
-            }
-
             walk_counter++;
             if(walk_counter > 7)
             {
@@ -191,8 +178,31 @@ int main() {
             walk_timer += dt;
         }
 
+        switch(walk_sequence[invert][walk_counter])
+        {   
+            case idle:
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, idle_sprite.getTextureID());
+                break;
+            case left1:
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, l1_sprite.getTextureID());
+                break;
+            case left2:
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, l2_sprite.getTextureID());
+                break;
+            case right1:
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, r1_sprite.getTextureID());
+                break;
+            case right2:
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, r2_sprite.getTextureID());
+                break;
+        }
         // Draw quad
-        character_quad.draw();
+        base_quad.draw();
 
         /* === Model === */
 

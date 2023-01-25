@@ -1,0 +1,12 @@
+.vscode/
+_Gary_Animation/
+tiny_laoder/
+walk_cycle/
+main-file-examples/
+example_mesh/
+textures/
+include/
+glad.c
+*.o
+*.dll
+*.exe

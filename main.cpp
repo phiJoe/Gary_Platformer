@@ -58,8 +58,9 @@ int main() {
 
     // ---------------------------------------------------------------------------------
 
-    // Character and Background
-    Quad base_quad;
+    Quad background_quad;
+    Quad character_quad;
+    character_quad.setVelocity(glm::vec2(-0.05f, 0.0f));
 
     // 3D Model
     std::string model_path = "example_mesh/viking_model.obj";
@@ -102,6 +103,9 @@ int main() {
     // Quad Transform
     glm::mat4 base = glm::mat4(1.0f);
     glm::mat4 scale = glm::scale(base, glm::vec3(0.05f, 0.05f, 0.05f));
+
+    // Character Transform
+    glm::mat4 model_m;
    
     // Model transform
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 2.0f, 3.0f),
@@ -115,6 +119,9 @@ int main() {
 
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+    glm::vec2 velocity;
+    glm::vec2 position;
 
     // ------------------------------- Loop Init -----------------------------------------
     double t1 = glfwGetTime();
@@ -152,11 +159,18 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, background.getTextureID());
 
         // Draw
-        base_quad.draw();
+        background_quad.draw();
         
         /* === Character === */
+
+        // Physics update
+        position = glm::vec2(character_quad.getPosition().x + character_quad.getVelocity().x * dt, 0);
+        character_quad.setPosition(position);
+
         quad_shader.activate();
-        quad_shader.setMatrix("model", glm::value_ptr(scale));
+
+        model_m = glm::translate(base, glm::vec3(position.x, -0.6f, 0.0f)) * scale;
+        quad_shader.setMatrix("model", glm::value_ptr(model_m));
         quad_shader.setBool("invert", invert);
 
         // Set sampler unit
@@ -171,6 +185,7 @@ int main() {
             {
                 walk_counter = 0;
                 invert = !invert;
+                character_quad.setVelocity(glm::vec2(character_quad.getVelocity().x * -1.0, 0.0f));
             }
         }
         else
@@ -178,7 +193,7 @@ int main() {
             walk_timer += dt;
         }
 
-        switch(walk_sequence[invert][walk_counter])
+        switch(walk_sequence[!invert][walk_counter])
         {   
             case idle:
                 glActiveTexture(GL_TEXTURE0);
@@ -202,7 +217,7 @@ int main() {
                 break;
         }
         // Draw quad
-        base_quad.draw();
+        character_quad.draw();
 
         /* === Model === */
 
@@ -244,80 +259,3 @@ void poll_buttons(GLFWwindow* window) {
     }
 }
 
-// void draw_walk(WALK_PHASE phase)
-// {
-//     switch(phase)
-//     {
-//         case idle:
-//             glActiveTexture(GL_TEXTURE0);
-//             glBindTexture(GL_TEXTURE_2D, idle.getTextureID());
-//             break;
-//         case left1:
-//             break;
-//         case left2:
-//             break;
-//         case right1:
-//             break;
-//         case right2:
-//             break;
-//         default:
-//             break;
-//     }
-// }
-
-/* Walk
-
-- Need: 
--- invert flag for right walk to invert texture coordinates
--- should_walk boolean
--- walk_phase enum
--- enum array[] = {walk_phases ...}
--- int walk_counter
--- walk_timer += dt;
-
-0)
-load walk textures
-
-1) 
-should_walk = false
-walk_timer = 0
-plot idle quad
-
-2) (poll button)
-if(press left): 
-    should_walk = true && invert = false
-if(press right): 
-    should_walk = true && invert = true
-
-if(released_left): 
-    should_walk = false
-if(released_right): 
-    should_walk = false
-
-3) (in main loop)
-walk_timer += dt
-
-if(should_walk && walk_timer > interval):
-    counter++;
-    fwalk() -> switch(walk_phase[counter])
-        case: left1
-            bind texture left1
-            draw quad
-
-        case: left2
-        case: idle
-        case: right1
-        case: right2
-    walk_timer = 0
-
-if(!should_walk):
-    if(walk_phase[counter] != idle && walk_timer > interval):
-        counter++;
-        fwalk() -> switch(walk_phase[counter])
-        ....
-    walk_timer = 0
-        
-
-
-
-*/

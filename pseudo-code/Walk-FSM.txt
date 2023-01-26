@@ -1,0 +1,77 @@
+// void draw_walk(WALK_PHASE phase)
+// {
+//     switch(phase)
+//     {
+//         case idle:
+//             glActiveTexture(GL_TEXTURE0);
+//             glBindTexture(GL_TEXTURE_2D, idle.getTextureID());
+//             break;
+//         case left1:
+//             break;
+//         case left2:
+//             break;
+//         case right1:
+//             break;
+//         case right2:
+//             break;
+//         default:
+//             break;
+//     }
+// }
+
+/* Walk
+
+- Need: 
+-- invert flag for right walk to invert texture coordinates
+-- should_walk boolean
+-- walk_phase enum
+-- enum array[] = {walk_phases ...}
+-- int walk_counter
+-- walk_timer += dt;
+
+0)
+load walk textures
+
+1) 
+should_walk = false
+walk_timer = 0
+plot idle quad
+
+2) (poll button)
+if(press left): 
+    should_walk = true && invert = false
+if(press right): 
+    should_walk = true && invert = true
+
+if(released_left): 
+    should_walk = false
+if(released_right): 
+    should_walk = false
+
+3) (in main loop)
+walk_timer += dt
+
+if(should_walk && walk_timer > interval):
+    counter++;
+    fwalk() -> switch(walk_phase[counter])
+        case: left1
+            bind texture left1
+            draw quad
+
+        case: left2
+        case: idle
+        case: right1
+        case: right2
+    walk_timer = 0
+
+if(!should_walk):
+    if(walk_phase[counter] != idle && walk_timer > interval):
+        counter++;
+        fwalk() -> switch(walk_phase[counter])
+        ....
+    walk_timer = 0
+        
+
+
+
+*/

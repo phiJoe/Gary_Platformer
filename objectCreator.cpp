@@ -5,7 +5,12 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <loader/tiny_obj_loader.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 Quad::Quad()
+    : _position{glm::vec2(0.0f)} , _velocity{glm::vec2(0.0f)}
 {
     float vertices[] = {
         // positions      // texture coords
@@ -60,6 +65,11 @@ void Quad::draw()
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
+
+void Quad::setPosition(glm::vec2 pos){_position = pos;}
+void Quad::setVelocity(glm::vec2 vel){_velocity = vel;}
+glm::vec2 Quad::getPosition(){return _position;}
+glm::vec2 Quad::getVelocity(){return _velocity;}
 
 // =====================================================================================
 

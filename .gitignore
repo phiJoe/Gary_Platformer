@@ -1,7 +1,9 @@
 .vscode/
 _Gary_Animation/
 tiny_laoder/
-walk_cycle/
+CODE_TESTS/
+assets_gary_walk_cycle/
+assets_gary_moves/
 main-file-examples/
 example_mesh/
 textures/

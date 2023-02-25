@@ -26,6 +26,7 @@ void poll_buttons(GLFWwindow *window);
 int window_width = 900;
 int window_height = 900;
 
+button_action_t debug_key_press;
 button_action_t button_action_state = LEFTR;
 button_action_t button_walk_state = LEFTR;
 
@@ -81,6 +82,7 @@ int main()
     // -----------------------------------------------------------------------------------
     // Basic textures
     Texture2D background("textures/background/grass_landscape.png");
+    // Texture2D background("textures/background/Blue_tile.png");
 
     // ------------------------------ Walk Animation -------------------------------------
     Texture2D idle_sprite("assets_gary_walk_cycle/idle.png");
@@ -89,9 +91,9 @@ int main()
     Texture2D r1_sprite("assets_gary_walk_cycle/right1_.png");
     Texture2D r2_sprite("assets_gary_walk_cycle/right2_.png");
     Texture2D jump_sprite("assets_gary_moves/jump.png");
-    // todo: fall
+    Texture2D duck_sprite("assets_gary_moves/duck.png");
 
-    // Walk
+    // Walk vector
     std::vector<Texture2D *> walk_textures;
     walk_textures.push_back(&idle_sprite);
     walk_textures.push_back(&l1_sprite);
@@ -136,22 +138,18 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         /* === Background === */
+
         background_shader.activate();
         background_shader.setMatrix("model", glm::value_ptr(base));
-
-        // Set sampler unit
         background_shader.setInt("tex", 0);
-
-        // Texture
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, background.getTextureID());
-
         background_quad.draw();
 
         /* === Character === */
 
         character.updateMovementState(button_action_state, dt);
-        character.draw(quad_shader, walk_textures, jump_sprite, idle_sprite);
+        character.draw(quad_shader, walk_textures, jump_sprite, idle_sprite, duck_sprite);
 
         /* === Displat all === */
 
@@ -196,24 +194,20 @@ void input_character_manager(int button, int action)
         if (action == GLFW_PRESS)
         {
             button_action_state = LEFTP;
-            button_walk_state = LEFTP;
         }
         if (action == GLFW_RELEASE)
         {
             button_action_state = LEFTR;
-            button_walk_state = LEFTR;
         }
         break;
     case GLFW_KEY_RIGHT:
         if (action == GLFW_PRESS)
         {
             button_action_state = RIGHTP;
-            button_walk_state = RIGHTP;
         }
         if (action == GLFW_RELEASE)
         {
             button_action_state = RIGHTR;
-            button_walk_state = RIGHTR;
         }
         break;
     case GLFW_KEY_UP:
@@ -236,7 +230,16 @@ void input_character_manager(int button, int action)
             button_action_state = DOWNR;
         }
         break;
+        // case GLFW_KEY_SPACE:
+        //     if (action == GLFW_PRESS)
+        //     {
+        //         debug_key_press = SPACEP;
+        //     }
+        //     if (action == GLFW_RELEASE)
+        //     {
+        //         debug_key_press = SPACER;
+        //     }
+        //     break;
     }
-
     // std::cout << "Button-Action: " << button_action_state << "\n";
 }
